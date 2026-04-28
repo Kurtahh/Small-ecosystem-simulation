@@ -28,6 +28,21 @@ public class Wolf extends Animal{
     @Override
     public void update(Ecosystem e)
     {
-        
+        if(this.getAlive()){
+            move();
+            setX(Math.max(0, Math.min(getX(), e.getWidth())));
+            setY(Math.max(0, Math.min(getY(), e.getHeight())));
+
+            for(Rabbit r : e.getRabbits()){
+                double dx = r.getX() - this.getX();
+                double dy = r.getY() - this.getY();
+                double distance = Math.sqrt(dx*dx + dy*dy);
+                if(distance < PROXIMITY_THRESHOLD && r.getAlive()){
+                    this.eat(r);
+                }
+            }
+            
+            depleteHunger();
+        }
     }
 }

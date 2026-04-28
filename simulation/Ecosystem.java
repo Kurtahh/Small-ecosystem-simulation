@@ -7,7 +7,9 @@ import java.util.ArrayList;
 
 public class Ecosystem {
     private static final Ecosystem instance = new Ecosystem();
-    private List<Animal> animals = new ArrayList<>();
+    private List<Rabbit> rabbits = new ArrayList<>();
+    private List<Rabbit> rabbitBuffer = new ArrayList<>();
+    private List<Wolf> wolves = new ArrayList<>();
     private int width, height;
     
     private Ecosystem() { };
@@ -17,9 +19,22 @@ public class Ecosystem {
         return instance;
     }
 
-    public List<Animal> getAnimals()
+    public int getWidth()
     {
-        return animals;
+        return width;
+    }
+    public int getHeight()
+    {
+        return height;
+    }
+
+    public List<Rabbit> getRabbits()
+    {
+        return rabbits;
+    }
+    public List<Wolf> getWolves()
+    {
+        return wolves;
     }
 
     public void setDimensions(int newWidth, int newHeight)
@@ -28,12 +43,16 @@ public class Ecosystem {
         height = newHeight;
     }
 
+    public void bufferRabbit(Rabbit r)
+    {
+        rabbitBuffer.add(r);
+    }
     public void addRabbit()
     {
         int x = Animal.rand.nextInt(width);
         int y = Animal.rand.nextInt(height);
         Rabbit r = new Rabbit(x, y);
-        animals.add(r);
+        rabbits.add(r);
     }
 
     public void addWolf()
@@ -41,11 +60,21 @@ public class Ecosystem {
         int x = Animal.rand.nextInt(width);
         int y = Animal.rand.nextInt(height);
         Wolf w = new Wolf(x, y);
-        animals.add(w);
+        wolves.add(w);
     }
 
     public void update()
     {
-
+        for(Rabbit r : rabbits){
+            r.update(Ecosystem.getInstance());
+        }
+        rabbits.removeIf(r -> !r.getAlive());
+        rabbits.addAll(rabbitBuffer);
+        rabbitBuffer.clear();
+        
+        for(Wolf w : wolves){
+            w.update(Ecosystem.getInstance());
+        }
+        wolves.removeIf(w -> !w.getAlive());
     }
 }

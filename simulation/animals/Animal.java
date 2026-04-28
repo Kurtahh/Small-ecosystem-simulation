@@ -5,14 +5,15 @@ import java.util.Random;
 import java.io.Serializable;
 
 public abstract class Animal implements Cloneable, Serializable {
-    private int x;
-    private int y;
+    private double x;
+    private double y;
     private boolean isAlive = true;
     private static int created = 0;
     private int speed;
     public static Random rand = new Random();
+    protected static final double PROXIMITY_THRESHOLD = 20.0;
 
-    protected Animal(int x, int y)
+    protected Animal(double x, double y)
     {
         this.x = x;
         this.y = y;
@@ -25,20 +26,20 @@ public abstract class Animal implements Cloneable, Serializable {
         return created;
     }
 
-    public int getX()
+    public double getX()
     {
         return x;
     }
-    public void setX(int newX)
+    public void setX(double newX)
     {
         x = newX;
     }
 
-    public int getY()
+    public double getY()
     {
         return y;
     }
-    public void setY(int newY)
+    public void setY(double newY)
     {
         y = newY;
     }
@@ -65,8 +66,8 @@ public abstract class Animal implements Cloneable, Serializable {
     {
         int dirX = rand.nextInt(3) - 1;
         int dirY = rand.nextInt(3) - 1;
-        int newX = getX() + dirX*speed;
-        int newY = getY() + dirY*speed;
+        double newX = getX() + dirX*speed;
+        double newY = getY() + dirY*speed;
         setX(newX);
         setY(newY);
     }
