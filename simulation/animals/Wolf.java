@@ -9,7 +9,7 @@ public class Wolf extends Animal{
     public Wolf(int x, int y){
         super(x, y);
         setSpeed(2);
-        hunger = 100;
+        hunger = 1000;
     }
 
     public void eat(Rabbit food){

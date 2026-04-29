@@ -4,6 +4,7 @@ import simulation.Ecosystem;
 
 public class Rabbit extends Animal{
     private int duplicationRate;
+    private int duplicationCooldown = 0;
     private int mealFactor;
 
     public Rabbit(int x, int y){
@@ -33,6 +34,8 @@ public class Rabbit extends Animal{
     @Override
     public void update(Ecosystem e)
     {
+        if(duplicationCooldown > 0) duplicationCooldown--;
+
         if(this.getAlive()){
             move();
             setX(Math.max(0, Math.min(getX(), e.getWidth())));
@@ -43,11 +46,12 @@ public class Rabbit extends Animal{
                     double dx = r.getX() - this.getX();
                     double dy = r.getY() - this.getY();
                     double distance = Math.sqrt(dx*dx + dy*dy);
-                    if(distance < PROXIMITY_THRESHOLD){
+                    if(distance < PROXIMITY_THRESHOLD && duplicationCooldown == 0){
                         try {
                             Rabbit baby = duplicate(r);
                             if(baby != null){
                                 e.bufferRabbit(baby);
+                                duplicationCooldown = 100;
                             }
                         }
                         catch(CloneNotSupportedException ex) {
