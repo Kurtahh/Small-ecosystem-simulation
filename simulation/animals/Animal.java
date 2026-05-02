@@ -9,9 +9,10 @@ public abstract class Animal implements Cloneable, Serializable {
     private double y;
     private boolean isAlive = true;
     private static int created = 0;
-    private int speed;
+    private double speed;
+    private int eyesight;
     public static Random rand = new Random();
-    protected static final double PROXIMITY_THRESHOLD = 20.0;
+    protected static final double PROXIMITY_THRESHOLD = 10.0;
 
     protected Animal(double x, double y)
     {
@@ -53,16 +54,26 @@ public abstract class Animal implements Cloneable, Serializable {
         this.isAlive = isAlive;
     }
 
-    public int getSpeed()
+    public double getSpeed()
     {
         return speed;
     }
-    public void setSpeed(int newSpeed)
+    public void setSpeed(double newSpeed)
     {
         speed = newSpeed;
     }
+    public int getEyesight()
+    {
+        return eyesight;
+    }
+    public void setEyesight(int newEyesight)
+    {
+        eyesight = newEyesight;
+    }
 
-    public void move()
+    abstract protected void move();
+
+    public void moveRandomly()
     {
         int dirX = rand.nextInt(3) - 1;
         int dirY = rand.nextInt(3) - 1;
@@ -72,7 +83,7 @@ public abstract class Animal implements Cloneable, Serializable {
         setY(newY);
     }
 
-    abstract public void update(Ecosystem e);
+    abstract protected void update(Ecosystem e);
 
     @Override
     public Animal clone() throws CloneNotSupportedException

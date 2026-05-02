@@ -47,7 +47,7 @@ public class Ecosystem {
     {
         rabbitBuffer.add(r);
     }
-    public void addRabbit()
+    public synchronized void addRabbit()
     {
         int x = Animal.rand.nextInt(width);
         int y = Animal.rand.nextInt(height);
@@ -55,7 +55,7 @@ public class Ecosystem {
         rabbits.add(r);
     }
 
-    public void addWolf()
+    public synchronized void addWolf()
     {   
         int x = Animal.rand.nextInt(width);
         int y = Animal.rand.nextInt(height);
@@ -63,7 +63,7 @@ public class Ecosystem {
         wolves.add(w);
     }
 
-    public void update()
+    public synchronized void update()
     {
         for(Rabbit r : rabbits){
             r.update(Ecosystem.getInstance());

@@ -24,8 +24,8 @@ public class SimulationUI {
             }
             for(Wolf w : Ecosystem.getInstance().getWolves()){
                 g2d.setColor(Color.RED);
-                int[] xPoints = { (int) w.getX(), (int) w.getX() - 5, (int) w.getX() + 5};
-                int[] yPoints = { (int) w.getY(), (int) w.getY() + 10, (int) w.getY() + 10};
+                int[] xPoints = { (int) w.getX(), (int) w.getX() - w.getSize(), (int) w.getX() + w.getSize()};
+                int[] yPoints = { (int) w.getY(), (int) w.getY() + w.getSize()*2, (int) w.getY() + w.getSize()*2};
                 g2d.fillPolygon(xPoints, yPoints, 3);
             }
         }

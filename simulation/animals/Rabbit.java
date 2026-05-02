@@ -9,9 +9,10 @@ public class Rabbit extends Animal{
 
     public Rabbit(int x, int y){
         super(x, y);
-        setSpeed(1);
+        setSpeed(3);
+        setEyesight(100);
         duplicationRate = rand.nextInt(10);
-        mealFactor = rand.nextInt(41) + 10; // mealFactor = [10;50]
+        mealFactor = rand.nextInt(201) + 300; // mealFactor = [300;500]
     }
 
     public int getMealFactor(){
@@ -29,6 +30,41 @@ public class Rabbit extends Animal{
             return copy;
         }
         return null;
+    }
+
+    @Override
+    protected void move()
+    {
+        if(duplicationCooldown == 0){
+            double minTargetDistance = getEyesight();
+            double targetDX = 1;
+            double targetDY = 1;
+            boolean foundTarget = false;
+            for(Rabbit target : Ecosystem.getInstance().getRabbits()){
+                if(target != this){
+                    double dx = target.getX() - getX();
+                    double dy = target.getY() - getY();
+                    double targetDistance = Math.sqrt(dx*dx + dy*dy);
+                    if(targetDistance > 0 && targetDistance < minTargetDistance){
+                        minTargetDistance = targetDistance;
+                        targetDX = dx;
+                        targetDY = dy;
+                        foundTarget = true;
+                    }
+                }
+            }
+
+            if(foundTarget){
+                setX(getX() + (targetDX/minTargetDistance) * getSpeed());
+                setY(getY() + (targetDY/minTargetDistance) * getSpeed());
+            }
+            else {
+                moveRandomly();
+            }
+        }
+        else {
+            moveRandomly();
+        }
     }
 
     @Override
