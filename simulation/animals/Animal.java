@@ -1,12 +1,12 @@
 package simulation.animals;
 
 import simulation.Ecosystem;
+import simulation.util.Vec2;
 import java.util.Random;
 import java.io.Serializable;
 
 public abstract class Animal implements Cloneable, Serializable {
-    private double x;
-    private double y;
+    private Vec2 position;
     private boolean isAlive = true;
     private static int created = 0;
     private double speed;
@@ -16,8 +16,7 @@ public abstract class Animal implements Cloneable, Serializable {
 
     protected Animal(double x, double y)
     {
-        this.x = x;
-        this.y = y;
+        position = new Vec2(x, y);
         isAlive = true;
         created++;
     }
@@ -27,22 +26,13 @@ public abstract class Animal implements Cloneable, Serializable {
         return created;
     }
 
-    public double getX()
+    public Vec2 getPosition()
     {
-        return x;
+        return position;
     }
-    public void setX(double newX)
+    public void setPosition(Vec2 newPosition)
     {
-        x = newX;
-    }
-
-    public double getY()
-    {
-        return y;
-    }
-    public void setY(double newY)
-    {
-        y = newY;
+        position = newPosition;
     }
 
     public boolean getAlive()
@@ -73,14 +63,21 @@ public abstract class Animal implements Cloneable, Serializable {
 
     abstract protected void move();
 
+    public void moveToward(Vec2 target)
+    {
+        Vec2 towards = new Vec2(position, target);
+        towards.normalize();
+        double newX = position.x + towards.x*speed;
+        double newY = position.y + towards.y*speed;
+        setPosition(new Vec2(newX, newY)); 
+    }
     public void moveRandomly()
     {
         int dirX = rand.nextInt(3) - 1;
         int dirY = rand.nextInt(3) - 1;
-        double newX = getX() + dirX*speed;
-        double newY = getY() + dirY*speed;
-        setX(newX);
-        setY(newY);
+        double newX = getPosition().x + dirX*speed;
+        double newY = getPosition().y + dirY*speed;
+        setPosition(new Vec2(newX, newY));
     }
 
     abstract protected void update(Ecosystem e);

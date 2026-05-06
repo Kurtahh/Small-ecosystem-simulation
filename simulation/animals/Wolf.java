@@ -1,14 +1,18 @@
 package simulation.animals;
 
 import simulation.Ecosystem;
+import simulation.util.Vec2;
 
 public class Wolf extends Animal{
+    private enum MovementState { WANDERING, HUNTING };
+    private MovementState state = MovementState.WANDERING;
     private int hunger;
     private int size = 5;
     private int eatCooldown = 3;
     private int starvationRate = 5;
+    private Vec2 nearestRabbitPos;
 
-    public Wolf(int x, int y){
+    public Wolf(double x, double y){
         super(x, y);
         setSpeed(2);
         setEyesight(10000);
@@ -20,12 +24,14 @@ public class Wolf extends Animal{
     }
 
     private void eat(Rabbit food){
-        hunger += food.getMealFactor();
-        hunger = Math.min(hunger, 1000);
-        food.setAlive(false);
-        size++;
-        setSpeed(getSpeed() - 0.01);
-        starvationRate += 0.1;
+        if(eatCooldown > 0){
+            hunger += food.getMealFactor();
+            hunger = Math.min(hunger, 1000);
+            food.setAlive(false);
+            size++;
+            setSpeed(getSpeed() - 0.01);
+            starvationRate += 0.1;
+        }
     }
 
     private void depleteHunger(){
@@ -35,55 +41,51 @@ public class Wolf extends Animal{
         }
     }
 
-    @Override
-    protected void move()
+    private void checkMovementState(Ecosystem e)
     {
-        if(eatCooldown > 0){
-            moveRandomly();
-            return;
-        }
-
-        double minTargetDistance = getEyesight();
-        double targetDX = 1;
-        double targetDY = 1;
-        boolean foundTarget = false;
-        for(Rabbit target : Ecosystem.getInstance().getRabbits()){
-            double dx = target.getX() - getX();
-            double dy = target.getY() - getY();
-            double targetDistance = Math.sqrt(dx*dx + dy*dy);
-            if(targetDistance < minTargetDistance){
-                minTargetDistance = targetDistance;
-                targetDX = dx;
-                targetDY = dy;
-                foundTarget = true;
+        double minDistRabbit = Double.MAX_VALUE;
+        for(Rabbit r : e.getRabbits()){
+            Vec2 toRabbit = new Vec2(getPosition(), r.getPosition());
+            if(toRabbit.length < getEyesight() && minDistRabbit > toRabbit.length){
+                minDistRabbit = toRabbit.length;
+                nearestRabbitPos = r.getPosition();
             }
         }
 
-        if(foundTarget){
-            setX(getX() + (targetDX/minTargetDistance) * getSpeed());
-            setY(getY() + (targetDY/minTargetDistance) * getSpeed());
+        if(minDistRabbit != Double.MAX_VALUE){
+            state = MovementState.HUNTING;
         }
         else {
-            moveRandomly();
+            state = MovementState.WANDERING;
+        }
+    }
+
+    @Override
+    protected void move()
+    {
+        switch(state){
+            case HUNTING -> moveToward(nearestRabbitPos);
+            case WANDERING -> moveRandomly();
         }
     }
 
     @Override
     public void update(Ecosystem e)
     {
-        if(eatCooldown > 0) eatCooldown--;
-
         if(this.getAlive()){
+            if(eatCooldown < 0) eatCooldown--;
+            checkMovementState(e);
             move();
-            setX(Math.max(0, Math.min(getX(), e.getWidth())));
-            setY(Math.max(0, Math.min(getY(), e.getHeight())));
+            double clampedX = Math.max(0, Math.min(getPosition().x, e.getWidth()));
+            double clampedY = Math.max(0, Math.min(getPosition().y, e.getHeight()));
+            setPosition(new Vec2(clampedX, clampedY));
 
             for(Rabbit r : e.getRabbits()){
-                double dx = r.getX() - this.getX();
-                double dy = r.getY() - this.getY();
-                double distance = Math.sqrt(dx*dx + dy*dy);
-                if(distance < size && r.getAlive() && eatCooldown == 0){
-                    this.eat(r);
+                if(nearestRabbitPos == r.getPosition()){
+                    Vec2 toPrey = new Vec2(getPosition(), nearestRabbitPos);
+                    if(toPrey.length < PROXIMITY_THRESHOLD){
+                        eat(r);
+                    }
                 }
             }
             

@@ -20,12 +20,12 @@ public class SimulationUI {
             Graphics2D g2d = (Graphics2D) g;
             for(Rabbit r : Ecosystem.getInstance().getRabbits()){
                 g2d.setColor(Color.GREEN);
-                g2d.fillOval((int) r.getX(), (int) r.getY(), 10, 10);
+                g2d.fillOval((int) r.getPosition().x, (int) r.getPosition().y, 10, 10);
             }
             for(Wolf w : Ecosystem.getInstance().getWolves()){
                 g2d.setColor(Color.RED);
-                int[] xPoints = { (int) w.getX(), (int) w.getX() - w.getSize(), (int) w.getX() + w.getSize()};
-                int[] yPoints = { (int) w.getY(), (int) w.getY() + w.getSize()*2, (int) w.getY() + w.getSize()*2};
+                int[] xPoints = { (int) w.getPosition().x, (int) w.getPosition().x - w.getSize(), (int) w.getPosition().x + w.getSize()};
+                int[] yPoints = { (int) w.getPosition().y, (int) w.getPosition().y + w.getSize()*2, (int) w.getPosition().y + w.getSize()*2};
                 g2d.fillPolygon(xPoints, yPoints, 3);
             }
         }
