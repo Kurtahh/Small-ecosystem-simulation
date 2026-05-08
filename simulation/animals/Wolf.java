@@ -4,18 +4,21 @@ import simulation.Ecosystem;
 import simulation.util.Vec2;
 
 public class Wolf extends Animal{
-    private static final int MAX_SIZE = 50;
-    private enum MovementState { WANDERING, HUNTING };
+    private static final int MAX_SIZE = 20;
+    private enum MovementState { WANDERING, HUNTING, CHASING };
     private MovementState state = MovementState.WANDERING;
     private int hunger;
     private int size = 5;
-    private int eatCooldown = 3;
+    private int chaseCooldown = 20;
     private int starvationRate = 5;
+    private double normalSpeed = 2;
+    private double chaseSpeed = 5;
+    private int chaseTimer = 20;
     private Vec2 nearestRabbitPos;
 
     public Wolf(double x, double y){
         super(x, y);
-        setSpeed(2);
+        setSpeed(normalSpeed);
         setEyesight(300);
         hunger = 1000;
     }
@@ -25,14 +28,12 @@ public class Wolf extends Animal{
     }
 
     private void eat(Rabbit food){
-        if(eatCooldown > 0){
-            hunger += food.getMealFactor();
-            hunger = Math.min(hunger, 1000);
-            food.setAlive(false);
-            if(size != MAX_SIZE) size++;
-            setSpeed(getSpeed() - 0.01);
-            starvationRate += 0.1;
-        }
+        hunger += food.getMealFactor();
+        hunger = Math.min(hunger, 1000);
+        food.setAlive(false);
+        if(size != MAX_SIZE) size++;
+        setSpeed(getSpeed() - 0.01);
+        starvationRate += 0.1;
     }
 
     private void depleteHunger(){
@@ -53,7 +54,10 @@ public class Wolf extends Animal{
             }
         }
 
-        if(minDistRabbit != Double.MAX_VALUE){
+        if(minDistRabbit != Double.MAX_VALUE && chaseCooldown == 0){
+            state = MovementState.CHASING;
+        }
+        else if (minDistRabbit != Double.MAX_VALUE) {
             state = MovementState.HUNTING;
         }
         else {
@@ -66,6 +70,11 @@ public class Wolf extends Animal{
     {
         switch(state){
             case HUNTING -> moveToward(nearestRabbitPos);
+            case CHASING -> {
+                setSpeed(chaseSpeed);
+                moveToward(nearestRabbitPos);
+                setSpeed(normalSpeed);  
+            }
             case WANDERING -> moveRandomly();
         }
     }
@@ -74,7 +83,15 @@ public class Wolf extends Animal{
     public void update(Ecosystem e)
     {
         if(this.getAlive()){
-            if(eatCooldown < 0) eatCooldown--;
+            if(chaseCooldown > 0) chaseCooldown--;
+            if(state == MovementState.CHASING){
+                if(chaseTimer > 0) chaseTimer--;
+                else {
+                    chaseTimer = 20;
+                    chaseCooldown = 20;
+                }
+            }
+
             checkMovementState(e);
             move();
             double clampedX = Math.max(0, Math.min(getPosition().x, e.getWidth()));
