@@ -81,7 +81,7 @@ public class Rabbit extends Animal{
         switch(state){
             case FLEEING -> {
                 Vec2 awayFromWolf = new Vec2(nearestWolfPos, getPosition());
-                moveToward(awayFromWolf);
+                moveInDirection(awayFromWolf);
             }
             case SEEKING_MATE -> moveToward(nearestRabbitPos); 
             case WANDERING -> moveRandomly();
@@ -110,6 +110,7 @@ public class Rabbit extends Animal{
                                 e.bufferRabbit(baby);
                                 duplicationCooldown = 100;
                             }
+                            else duplicationCooldown = 50;
                         }
                         catch(CloneNotSupportedException ex) {
                             //do nothing

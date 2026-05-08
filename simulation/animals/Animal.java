@@ -71,6 +71,11 @@ public abstract class Animal implements Cloneable, Serializable {
         double newY = position.y + towards.y*speed;
         setPosition(new Vec2(newX, newY)); 
     }
+    public void moveInDirection(Vec2 direction)
+    {
+        direction.normalize();
+        setPosition(new Vec2(getPosition().x + direction.x*speed, getPosition().y + direction.y*speed));
+    }
     public void moveRandomly()
     {
         int dirX = rand.nextInt(3) - 1;

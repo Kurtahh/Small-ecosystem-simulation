@@ -4,6 +4,7 @@ import simulation.Ecosystem;
 import simulation.util.Vec2;
 
 public class Wolf extends Animal{
+    private static final int MAX_SIZE = 50;
     private enum MovementState { WANDERING, HUNTING };
     private MovementState state = MovementState.WANDERING;
     private int hunger;
@@ -15,7 +16,7 @@ public class Wolf extends Animal{
     public Wolf(double x, double y){
         super(x, y);
         setSpeed(2);
-        setEyesight(10000);
+        setEyesight(300);
         hunger = 1000;
     }
 
@@ -28,7 +29,7 @@ public class Wolf extends Animal{
             hunger += food.getMealFactor();
             hunger = Math.min(hunger, 1000);
             food.setAlive(false);
-            size++;
+            if(size != MAX_SIZE) size++;
             setSpeed(getSpeed() - 0.01);
             starvationRate += 0.1;
         }
