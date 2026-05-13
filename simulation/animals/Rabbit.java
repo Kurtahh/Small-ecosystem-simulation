@@ -4,7 +4,7 @@ import simulation.Ecosystem;
 import simulation.util.Vec2;
 
 public class Rabbit extends Animal{
-    private enum MovementState { WANDERING, FLEEING, SEEKING_MATE }
+    public enum MovementState { WANDERING, FLEEING, SEEKING_MATE }
     private MovementState state = MovementState.WANDERING;
     private int duplicationRate;
     private int duplicationCooldown = 0;
@@ -20,6 +20,9 @@ public class Rabbit extends Animal{
         mealFactor = rand.nextInt(201) + 300; // mealFactor = [300;500]
     }
 
+    public MovementState getMovementState(){
+        return state;
+    }
     public int getMealFactor(){
         return mealFactor;
     }
@@ -95,7 +98,10 @@ public class Rabbit extends Animal{
 
         if(this.getAlive()){
             checkMovementState(e);
+            Vec2 prevPos = getPosition();
             move();
+            Vec2 facing = new Vec2(prevPos, getPosition());
+            setFacing(facing);
             double clampedX = Math.max(0, Math.min(getPosition().x, e.getWidth()));
             double clampedY = Math.max(0, Math.min(getPosition().y, e.getHeight()));
             setPosition(new Vec2(clampedX, clampedY));

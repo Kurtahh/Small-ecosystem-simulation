@@ -7,6 +7,7 @@ import java.io.Serializable;
 
 public abstract class Animal implements Cloneable, Serializable {
     private Vec2 position;
+    private Vec2 facing;
     private boolean isAlive = true;
     private static int created = 0;
     private double speed;
@@ -33,6 +34,13 @@ public abstract class Animal implements Cloneable, Serializable {
     public void setPosition(Vec2 newPosition)
     {
         position = newPosition;
+    }
+
+    public Vec2 getFacing(){
+        return facing;
+    }
+    public void setFacing(Vec2 newFacing){
+        facing = newFacing;
     }
 
     public boolean getAlive()

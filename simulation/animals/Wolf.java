@@ -5,7 +5,7 @@ import simulation.util.Vec2;
 
 public class Wolf extends Animal{
     private static final int MAX_SIZE = 20;
-    private enum MovementState { WANDERING, HUNTING, CHASING };
+    public enum MovementState { WANDERING, HUNTING, CHASING };
     private MovementState state = MovementState.WANDERING;
     private int hunger;
     private int size = 5;
@@ -14,6 +14,7 @@ public class Wolf extends Animal{
     private double normalSpeed = 2;
     private double chaseSpeed = 5;
     private int chaseTimer = 20;
+    private Vec2 prevPos;
     private Vec2 nearestRabbitPos;
 
     public Wolf(double x, double y){
@@ -23,6 +24,9 @@ public class Wolf extends Animal{
         hunger = 1000;
     }
 
+    public MovementState getMovementState(){
+        return state;
+    }
     public int getSize(){
         return size;
     }
@@ -93,7 +97,10 @@ public class Wolf extends Animal{
             }
 
             checkMovementState(e);
+            prevPos = getPosition();
             move();
+            Vec2 facing = new Vec2(prevPos, getPosition());
+            setFacing(facing);
             double clampedX = Math.max(0, Math.min(getPosition().x, e.getWidth()));
             double clampedY = Math.max(0, Math.min(getPosition().y, e.getHeight()));
             setPosition(new Vec2(clampedX, clampedY));
