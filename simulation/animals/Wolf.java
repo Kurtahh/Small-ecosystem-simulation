@@ -4,40 +4,34 @@ import simulation.Ecosystem;
 import simulation.util.Vec2;
 
 public class Wolf extends Animal{
-    private static final int MAX_SIZE = 20;
+    private static final double PROXIMITY_THRESHOLD = 45.0;
     public enum MovementState { WANDERING, HUNTING, CHASING };
     private MovementState state = MovementState.WANDERING;
     private int hunger;
-    private int size = 5;
     private int chaseCooldown = 20;
     private int starvationRate = 5;
     private double normalSpeed = 2;
-    private double chaseSpeed = 5;
-    private int chaseTimer = 20;
+    private double chaseSpeed = 6;
+    private int chaseTimer = 40;
     private Vec2 prevPos;
     private Vec2 nearestRabbitPos;
 
     public Wolf(double x, double y){
         super(x, y);
         setSpeed(normalSpeed);
-        setEyesight(300);
+        setEyesight(600);
         hunger = 1000;
     }
 
     public MovementState getMovementState(){
         return state;
     }
-    public int getSize(){
-        return size;
-    }
 
     private void eat(Rabbit food){
         hunger += food.getMealFactor();
         hunger = Math.min(hunger, 1000);
         food.setAlive(false);
-        if(size != MAX_SIZE) size++;
         setSpeed(getSpeed() - 0.01);
-        starvationRate += 0.1;
     }
 
     private void depleteHunger(){
@@ -101,8 +95,8 @@ public class Wolf extends Animal{
             move();
             Vec2 facing = new Vec2(prevPos, getPosition());
             setFacing(facing);
-            double clampedX = Math.max(0, Math.min(getPosition().x, e.getWidth()));
-            double clampedY = Math.max(0, Math.min(getPosition().y, e.getHeight()));
+            double clampedX = Math.max(PROXIMITY_THRESHOLD, Math.min(getPosition().x, e.getWidth()-PROXIMITY_THRESHOLD));
+            double clampedY = Math.max(PROXIMITY_THRESHOLD, Math.min(getPosition().y, e.getHeight()-PROXIMITY_THRESHOLD));
             setPosition(new Vec2(clampedX, clampedY));
 
             for(Rabbit r : e.getRabbits()){

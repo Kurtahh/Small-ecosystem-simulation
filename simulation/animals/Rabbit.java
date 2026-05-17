@@ -4,6 +4,7 @@ import simulation.Ecosystem;
 import simulation.util.Vec2;
 
 public class Rabbit extends Animal{
+    private static final double PROXIMITY_THRESHOLD = 20.0;
     public enum MovementState { WANDERING, FLEEING, SEEKING_MATE }
     private MovementState state = MovementState.WANDERING;
     private int duplicationRate;
@@ -15,7 +16,7 @@ public class Rabbit extends Animal{
     public Rabbit(double x, double y){
         super(x, y);
         setSpeed(3);
-        setEyesight(100);
+        setEyesight(300);
         duplicationRate = rand.nextInt(10);
         mealFactor = rand.nextInt(201) + 300; // mealFactor = [300;500]
     }
@@ -102,8 +103,8 @@ public class Rabbit extends Animal{
             move();
             Vec2 facing = new Vec2(prevPos, getPosition());
             setFacing(facing);
-            double clampedX = Math.max(0, Math.min(getPosition().x, e.getWidth()));
-            double clampedY = Math.max(0, Math.min(getPosition().y, e.getHeight()));
+            double clampedX = Math.max(PROXIMITY_THRESHOLD, Math.min(getPosition().x, e.getWidth()-PROXIMITY_THRESHOLD));
+            double clampedY = Math.max(PROXIMITY_THRESHOLD, Math.min(getPosition().y, e.getHeight()-PROXIMITY_THRESHOLD));
             setPosition(new Vec2(clampedX, clampedY));
 
             for(Rabbit r : e.getRabbits()){

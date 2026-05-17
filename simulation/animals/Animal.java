@@ -13,7 +13,6 @@ public abstract class Animal implements Cloneable, Serializable {
     private double speed;
     private int eyesight;
     public static Random rand = new Random();
-    protected static final double PROXIMITY_THRESHOLD = 10.0;
 
     protected Animal(double x, double y)
     {

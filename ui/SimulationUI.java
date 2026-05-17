@@ -7,6 +7,9 @@ import java.io.File;
 import java.io.IOException;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.image.BufferedImage;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import simulation.animals.Rabbit;
 import simulation.animals.Wolf;
 import simulation.Ecosystem;
@@ -19,6 +22,11 @@ public class SimulationUI {
     private class WorldPanel extends JPanel {
         private Image ecoBgSprite = new ImageIcon("assets/ECOSYSTEM.png").getImage();
         private Image rabbitSprite = new ImageIcon("assets/RABBIT.png").getImage();
+        private Image leftWolfSprite = new ImageIcon("assets/LWOLF.png").getImage();
+        private Image rightWolfSprite = new ImageIcon("assets/RWOLF.png").getImage();
+        private BufferedImage rabbitOutlinedSprite = createOutlined(rabbitSprite, 8, 8);
+        private BufferedImage lWolfOutlinedSprite = createOutlined(leftWolfSprite, 16, 16);
+        private BufferedImage rWolfOutlinedSprite = createOutlined(rightWolfSprite, 16, 16);
         @Override
         protected void paintComponent(Graphics g)
         {
@@ -44,38 +52,86 @@ public class SimulationUI {
 
                 g2d.translate(rx, ry);
                 if(r.getMovementState() != Rabbit.MovementState.WANDERING) g2d.rotate(rAngle);
-                g2d.drawImage(rabbitSprite, -16, -16, 32, 32, this);
-                g2d.setTransform(saved); 
-                //g2d.fillOval((int) r.getPosition().x, (int) r.getPosition().y, 10, 10);
+                //outline
+                g2d.drawImage(rabbitOutlinedSprite, -17, -17, 34, 34, this);
+                
+                // g2d.drawImage(rabbitSprite, -16, -16, 32, 32, this);
+                g2d.setTransform(saved);
             }
             for(Wolf w : Ecosystem.getInstance().getWolves()){
                 AffineTransform saved = g2d.getTransform();
 
                 g2d.setColor(Color.RED);
-                double wangle = Math.atan2(w.getFacing().y, w.getFacing().x) + Math.PI/2;
+                double wangle;
+                if(w.getFacing().x < 0) wangle = Math.atan2(w.getFacing().y, w.getFacing().x) + Math.PI;
+                else wangle = Math.atan2(w.getFacing().y, w.getFacing().x);
+
                 double wx = w.getPosition().x;
                 double wy = w.getPosition().y;
 
                 g2d.translate(wx, wy);
                 if(w.getMovementState() != Wolf.MovementState.WANDERING) g2d.rotate(wangle);
 
-                int[] xPoints = { 0, -w.getSize(), w.getSize() };
-                int[] yPoints = { 0, w.getSize()*2, w.getSize()*2 };
-                double scale = 1.2;
-                int[] outlineX = {0, (int)(-w.getSize()*scale), (int)(w.getSize()*scale)};
-                int[] outlineY = {(int)(-w.getSize()*0.2 -2), (int)(w.getSize()*2*scale), (int)(w.getSize()*2*scale)};
-                // outline
-                g2d.setColor(Color.BLACK);
-                g2d.drawPolygon(outlineX, outlineY, 3);
-                g2d.setStroke(new BasicStroke(1)); // reset
-
-                // fill
-                g2d.setColor(Color.RED);
-                g2d.fillPolygon(xPoints, yPoints, 3);
-
+                if(w.getFacing().x > 0 && w.getMovementState() != Wolf.MovementState.WANDERING) 
+                    g2d.drawImage(rWolfOutlinedSprite, -48, -48, 96, 96, this);
+                else g2d.drawImage(lWolfOutlinedSprite, -48, -48, 96, 96, this);
+                
                 g2d.setTransform(saved);
             }
         }
+        private BufferedImage createOutlined(Image sprite, int w, int h)
+        {
+            BufferedImage outlined = new BufferedImage(w+2, h+2, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D og = outlined.createGraphics();
+            og.drawImage(sprite, 1, 0, w, h, null);
+            og.drawImage(sprite, 1, 2, w, h, null);
+            og.drawImage(sprite, 0, 1, w, h, null);
+            og.drawImage(sprite, 2, 1, w, h, null);
+            og.drawImage(sprite, 1, 1, w, h, null); // diagonals
+            og.drawImage(sprite, 0, 0, w, h, null);
+            og.drawImage(sprite, 2, 0, w, h, null);
+            og.drawImage(sprite, 0, 2, w, h, null);
+            og.drawImage(sprite, 2, 2, w, h, null);
+            og.setComposite(AlphaComposite.SrcAtop);
+            og.setColor(Color.BLACK);
+            og.fillRect(0, 0, w+2, h+2);
+            og.setComposite(AlphaComposite.SrcOver);
+            og.drawImage(sprite, 1, 1, w, h, null);
+            og.dispose();
+            return outlined;
+        }
+    }
+
+    private JButton createButton(String label, Runnable action, Font font) {
+        JButton btn = new JButton(label) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                g.drawImage(buttonSprite, 0, 0, getWidth(), getHeight(), this);
+                if(getModel().isRollover()){
+                    g.setColor(new Color(255, 255, 255, 30));
+                    g.fillRect(0, 0, getWidth(), getHeight());
+                }
+                if(getModel().isPressed()){
+                    g.setColor(new Color(255, 255, 255, 60));
+                    g.fillRect(0, 0, getWidth(), getHeight());
+                }
+                g.setColor(new Color(0, 0, 0, 60));
+                g.fillRect(0, 0, getWidth(), getHeight());
+                super.paintComponent(g);
+            }
+        };
+        btn.setRolloverEnabled(true);
+        btn.setFont(font);
+        btn.setHorizontalTextPosition(JButton.CENTER);
+        btn.setVerticalTextPosition(JButton.CENTER);
+        btn.setContentAreaFilled(false);
+        btn.addActionListener(e -> action.run());
+        btn.setPreferredSize(new Dimension(buttonW, buttonH));
+        btn.setFocusPainted(false);
+        btn.setForeground(Color.BLACK);
+        btn.setOpaque(false);
+        btn.setBorder(BorderFactory.createLineBorder(Color.BLACK, 3));
+        return btn;
     }
 
     private void createAndShowGUI() throws FontFormatException, IOException{
@@ -119,132 +175,32 @@ public class SimulationUI {
 
         JPanel buttons = new JPanel(new GridLayout(2, 2, 10, 10));
 
-        JButton addR = new JButton("Add rabbit") {
+        JButton addR = createButton("Add rabbit", () -> Ecosystem.getInstance().addRabbit(), minecraftFont);
+        Timer rHoldTimer = new Timer(200, e -> Ecosystem.getInstance().addRabbit());
+        rHoldTimer.setRepeats(true);
+        addR.addMouseListener(new MouseAdapter() {
             @Override
-            protected void paintComponent(Graphics g) {
-                g.drawImage(buttonSprite, 0, 0, getWidth(), getHeight(), this);
-                if(getModel().isRollover()){
-                    g.setColor(new Color(255, 255, 255, 30));
-                    g.fillRect(0, 0, getWidth(), getHeight());
-                }
-                if(getModel().isPressed()){
-                    g.setColor(new Color(255, 255, 255, 60));
-                    g.fillRect(0, 0, getWidth(), getHeight());
-                }
-                g.setColor(new Color(0, 0, 0, 60));
-                g.fillRect(0, 0, getWidth(), getHeight());
-                super.paintComponent(g);
-            }
-        };
-        addR.setRolloverEnabled(true);
-        addR.setFont(minecraftFont);
-        addR.setHorizontalTextPosition(JButton.CENTER);
-        addR.setVerticalTextPosition(JButton.CENTER);
-        addR.setContentAreaFilled(false);
-        addR.addActionListener(e -> {
-            Ecosystem.getInstance().addRabbit();
+            public void mousePressed(MouseEvent e) { rHoldTimer.start(); }
+            @Override
+            public void mouseReleased(MouseEvent e) { rHoldTimer.stop(); }
         });
-        addR.setPreferredSize(new Dimension(buttonW, buttonH));
-        addR.setFocusPainted(false);
-        addR.setForeground(Color.BLACK);
-        addR.setOpaque(false);
-        addR.setBorder(BorderFactory.createLineBorder(Color.BLACK, 3));
         buttons.add(addR);
 
-        JButton addW = new JButton("Add wolf") {
+        JButton addW = createButton("Add wolf", () -> Ecosystem.getInstance().addWolf(), minecraftFont);
+        Timer wHoldTimer = new Timer(200, e -> Ecosystem.getInstance().addWolf());
+        wHoldTimer.setRepeats(true);
+        addW.addMouseListener(new MouseAdapter() {
             @Override
-            protected void paintComponent(Graphics g) {
-                g.drawImage(buttonSprite, 0, 0, getWidth(), getHeight(), this);
-                if(getModel().isRollover()){
-                    g.setColor(new Color(255, 255, 255, 30));
-                    g.fillRect(0, 0, getWidth(), getHeight());
-                }
-                if(getModel().isPressed()){
-                    g.setColor(new Color(255, 255, 255, 60));
-                    g.fillRect(0, 0, getWidth(), getHeight());
-                }
-                g.setColor(new Color(0, 0, 0, 60));
-                g.fillRect(0, 0, getWidth(), getHeight());
-                super.paintComponent(g);
-            }
-        };
-        addW.setRolloverEnabled(true);
-        addW.setFont(minecraftFont);
-        addW.setHorizontalTextPosition(JButton.CENTER);
-        addW.setVerticalTextPosition(JButton.CENTER);
-        addW.setContentAreaFilled(false);
-        addW.addActionListener(e -> {
-            Ecosystem.getInstance().addWolf();
+            public void mousePressed(MouseEvent e) { wHoldTimer.start(); }
+            @Override
+            public void mouseReleased(MouseEvent e) { wHoldTimer.stop(); }
         });
-        addW.setPreferredSize(new Dimension(buttonW, buttonH));
-        addW.setFocusPainted(false);
-        addW.setForeground(Color.BLACK);
-        addW.setOpaque(false);
-        addW.setBorder(BorderFactory.createLineBorder(Color.BLACK, 3));
         buttons.add(addW);
 
-        JButton save = new JButton("Save") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                g.drawImage(buttonSprite, 0, 0, getWidth(), getHeight(), this);
-                if(getModel().isRollover()){
-                    g.setColor(new Color(255, 255, 255, 30));
-                    g.fillRect(0, 0, getWidth(), getHeight());
-                }
-                if(getModel().isPressed()){
-                    g.setColor(new Color(255, 255, 255, 60));
-                    g.fillRect(0, 0, getWidth(), getHeight());
-                }
-                g.setColor(new Color(0, 0, 0, 60));
-                g.fillRect(0, 0, getWidth(), getHeight());
-                super.paintComponent(g);
-            }
-        };
-        save.setRolloverEnabled(true);
-        save.setFont(minecraftFont);
-        save.setHorizontalTextPosition(JButton.CENTER);
-        save.setVerticalTextPosition(JButton.CENTER);
-        save.setContentAreaFilled(false);
-        save.addActionListener(e -> {
-            //Ecosystem.getInstance().save();
-        });
-        save.setPreferredSize(new Dimension(buttonW, buttonH));
-        save.setFocusPainted(false);
-        save.setForeground(Color.BLACK);
-        save.setOpaque(false);
-        save.setBorder(BorderFactory.createLineBorder(Color.BLACK, 3));
+        JButton save = createButton("Save", () -> Ecosystem.getInstance().save(), minecraftFont);
         buttons.add(save);
 
-        JButton load = new JButton("Load") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                g.drawImage(buttonSprite, 0, 0, getWidth(), getHeight(), this);
-                if(getModel().isRollover()){
-                    g.setColor(new Color(255, 255, 255, 30));
-                    g.fillRect(0, 0, getWidth(), getHeight());
-                }
-                if(getModel().isPressed()){
-                    g.setColor(new Color(255, 255, 255, 60));
-                    g.fillRect(0, 0, getWidth(), getHeight());
-                }
-                g.setColor(new Color(0, 0, 0, 60));
-                g.fillRect(0, 0, getWidth(), getHeight());
-                super.paintComponent(g);
-            }
-        };
-        load.setRolloverEnabled(true);
-        load.setFont(minecraftFont);
-        load.setHorizontalTextPosition(JButton.CENTER);
-        load.setVerticalTextPosition(JButton.CENTER);
-        load.setContentAreaFilled(false);
-        load.addActionListener(e -> {
-            //Ecosystem.getInstance().load();
-        });
-        load.setPreferredSize(new Dimension(buttonW, buttonH));
-        load.setFocusPainted(false);
-        load.setForeground(Color.BLACK);
-        load.setOpaque(false);
-        load.setBorder(BorderFactory.createLineBorder(Color.BLACK, 3));
+        JButton load = createButton("Load", () -> Ecosystem.getInstance().load(), minecraftFont);
         buttons.add(load);
 
         buttons.setPreferredSize(new Dimension(700, buttonH * 2 + 10));

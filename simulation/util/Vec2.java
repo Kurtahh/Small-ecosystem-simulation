@@ -1,6 +1,7 @@
 package simulation.util;
+import java.io.Serializable;
 
-public class Vec2 {
+public class Vec2 implements Serializable{
     public double x;
     public double y;
     public double length;
